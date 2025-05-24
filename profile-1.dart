@@ -13,24 +13,29 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: ProfileScreen(),
+      home: UserProfileScreen(),
     );
   }
 }
 
-class ProfileScreen extends StatefulWidget {
+class UserProfileScreen extends StatefulWidget {
   @override
-  ProfileScreenState createState() => ProfileScreenState();
+  _UserProfileScreenState createState() => _UserProfileScreenState();
 }
 
-class ProfileScreenState extends State<ProfileScreen> {
-  File? _image;
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  File? _profileImage;
+  File? _additionalImage;
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(bool isProfileImage) async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        if (isProfileImage) {
+          _profileImage = File(pickedFile.path);
+        } else {
+          _additionalImage = File(pickedFile.path);
+        }
       });
     }
   }
@@ -46,7 +51,7 @@ class ProfileScreenState extends State<ProfileScreen> {
             Container(
               height: 150,
               decoration: BoxDecoration(
-                color: Colors.blue[300],
+                color: Colors.blue[300],  // <-- ici modifié
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30),
@@ -54,15 +59,23 @@ class ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 10),
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(Icons.person, size: 50, color: Colors.white),
+            GestureDetector(
+              onTap: () => _pickImage(true),
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  shape: BoxShape.circle,
+                  image: _profileImage != null
+                      ? DecorationImage(image: FileImage(_profileImage!), fit: BoxFit.cover)
+                      : null,
+                ),
+                child: _profileImage == null
+                    ? Center(
+                  child: Icon(Icons.person_add_alt_1, size: 50, color: Colors.white),
+                )
+                    : null,
               ),
             ),
             SizedBox(height: 10),
@@ -73,26 +86,6 @@ class ProfileScreenState extends State<ProfileScreen> {
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
                 letterSpacing: 1.2,
-              ),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Message()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[300],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: Text(
-                'Send Message',
-                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
             SizedBox(height: 20),
@@ -112,43 +105,39 @@ class ProfileScreenState extends State<ProfileScreen> {
             ),
             buildDropdownMenu(selectedOption),
             SizedBox(height: 20),
-
-            // زر "Commander"
+            GestureDetector(
+              onTap: () => _pickImage(false),
+              child: Container(
+                width: 300,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
+                  image: _additionalImage != null
+                      ? DecorationImage(image: FileImage(_additionalImage!), fit: BoxFit.cover)
+                      : null,
+                ),
+                child: _additionalImage == null
+                    ? Center(
+                  child: Icon(Icons.add_photo_alternate, size: 50, color: Colors.white),
+                )
+                    : null,
+              ),
+            ),
+            SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Vous avez choisi l\'offre: $selectedOption')),
-                );
-              },
+              onPressed: () => _pickImage(false),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[300],
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                backgroundColor: Colors.blue[300],  // <-- ici modifié
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               child: Text(
-                'Commander $selectedOption',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                "Sélectionner une photo",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
-            ),
-
-            SizedBox(height: 20),
-            Container(
-              width: 300,
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-                image: _image != null
-                    ? DecorationImage(image: FileImage(_image!), fit: BoxFit.cover)
-                    : null,
-              ),
-              child: _image == null
-                  ? Center(
-                child: Icon(Icons.add_photo_alternate, size: 50, color: Colors.white),
-              )
-                  : null,
             ),
             SizedBox(height: 10),
           ],
@@ -250,7 +239,11 @@ class ProfileScreenState extends State<ProfileScreen> {
           if (label.isNotEmpty)
             Text(
               label,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue[300]),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[300],  // <-- ici modifié
+              ),
             )
           else
             Icon(showCheckIcon ? Icons.check : Icons.close,
@@ -260,4 +253,16 @@ class ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
